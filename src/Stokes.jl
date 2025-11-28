@@ -7,9 +7,7 @@ using WriteVTK
 
 simdir = datadir("sims", "fluid_stokes")
 setupfolder(simdir)
-
-geomodel = GmshDiscreteModel("./data/models/example.msh")
-
+geomodel = GmshDiscreteModel("./data/models/Sphere_in_channel.msh")
 
 # Setup integration
 orderu = 1
@@ -43,40 +41,14 @@ Up = TrialFESpace(Vp, D_bc[2],1.0)
 V = MultiFieldFESpace([Vu, Vp])
 U = MultiFieldFESpace([Uu, Up])
 
-  
 I=TensorValue(1.0,0.0,0.0,1.0)
 ε(∇u)=0.5*(∇u+∇u')
 μ=1.0
 a((u, p),(v, q)) = ∫((μ*(ε∘(∇(u)))-p*I)⊙ (ε∘(∇(v))))dΩ-∫(q*(I ⊙ (ε∘(∇(u)))))dΩ
 l((v,q))=0.0
-m = StaticLinearModel(l, a, U, V, D_bc)
+compmodel = StaticLinearModel(l, a, U, V, D_bc)
 
-
-
-op=AffineFEOperator(a,l,U,V)
-K, b = get_matrix(op), get_vector(op)
- 
-
-
-  assem=m.caches[5]
-  u = get_trial_fe_basis(U)
-  v = get_fe_basis(V)
-  uhd = zero(U)
-  matcontribs=a(u,v)
-  veccontribs = l(v)
-  data = collect_cell_matrix_and_vector(U,V,matcontribs,veccontribs,uhd)
-  assemble_matrix_and_vector!(K,b,assem,data)
-
-
-  
-  A,b = assemble_matrix_and_vector(assem,data)
-
-  assemble_matrix_and_vector!(K,b,assem,data)
- 
-
-b .*=200
-# xh=get_state(compmodel)
-# Postprocessor to save results
+xh=get_state(compmodel)
 function driverpost(post)
     Λ_ = post.iter
     uh = xh[1]
@@ -88,22 +60,6 @@ function driverpost(post)
     end
 end
 
-post_model = PostProcessor(m, driverpost; is_vtk=true, filepath=simdir)
+post_model = PostProcessor(compmodel, driverpost; is_vtk=true, filepath=simdir)
  
-solve!(m; Assembly=true, post=post_model)
-
- 
-
-
-   U, V = m.spaces
-    jac = m.jac
-    res = m.res
-    ns, K, b, x, assem_U = m.caches
- 
-        assemble_vector!(res, b, assem_U, V)
- 
-            b = allocate_in_range(K)
-        fill!(b, zero(eltype(b))) # 1D
-
-    numerical_setup!(ns, K)
-    solve!(x, ns, b)
+solve!(compmodel; Assembly=false, post=post_model)

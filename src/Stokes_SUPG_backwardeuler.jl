@@ -4,7 +4,7 @@ using GridapSolvers.NonlinearSolvers
 using Gridap.FESpaces
 using WriteVTK
 
-simdir = datadir("sims", "fluid_stokes_SUPG")
+simdir = datadir("sims", "fluid_stokes_SUPG_backeuler")
 setupfolder(simdir)
 
 geomodel = GmshDiscreteModel("./data/models/Sphere_in_channel.msh")
@@ -17,7 +17,7 @@ orderp = 1
 dΩ = Measure(Ω, 2 * orderu)
 
 # DirichletBC velocity
-evolu(Λ) = Λ
+evolu(Λ) = sin(Λ)
 dir_u_tags = ["Dirichlet_Inlet", "Dirichlet_Wall", "Dirichlet_Circle"]
 dir_u_values = [x -> VectorValue([16 * 1.0 * (0.0625 - x[2]^2), 0.0]), [0.0, 0.0], [0.0, 0.0]]
 dir_u_timesteps = [evolu, evolu, evolu]
@@ -47,15 +47,14 @@ V = MultiFieldFESpace([Vu, Vp])
 U⁺ = MultiFieldFESpace([Uu⁺, Up⁺])
 U⁻ = MultiFieldFESpace([Uu⁻, Up⁻])
 
-xh⁺ = FEFunction(U⁺, zero_free_values(U⁺))
 xh⁻ = FEFunction(U⁻, zero_free_values(U⁻))
-p⁻ = FEFunction(Up⁻, zero_free_values(Up⁻))
 
 Vl2 = TestFESpace(Ω, reffel2, conformity=:L2)
 I = TensorValue(1.0, 0.0, 0.0, 1.0)
 ε(∇u) = 0.5 * (∇u + ∇u')
 μ = 1.0
-ρ = 0.0
+ρ = 1.0
+Δt=0.025
 cellmeasure = sqrt.(get_cell_measure(Ω))
 he = FEFunction(Vl2, cellmeasure)
 τlsic(u, he) = ρ * norm(u) * he * 0.5
@@ -64,32 +63,36 @@ he = FEFunction(Vl2, cellmeasure)
 
 gu = interpolate_everywhere(∇(xh⁻[1])', Vgu)
 
-agk((u, p), (v, q)) = ∫((μ * (ε ∘ (∇(u))) - p * I) ⊙ (ε ∘ (∇(v))))dΩ - ∫(q * (I ⊙ (ε ∘ (∇(u)))))dΩ
+agk((u, p), (v, q)) = ∫((ρ/Δt)*(u⋅v))dΩ+∫((μ * (ε ∘ (∇(u))) - p * I) ⊙ (ε ∘ (∇(v))))dΩ - ∫(q * (I ⊙ (ε ∘ (∇(u)))))dΩ
 aτ((u, p), (v, q)) = ∫((τlsic ∘ (xh⁻[1], he)) * (∇ ⋅ v) * (∇ ⋅ u))dΩ - ∫((τpspg ∘ (he)) * (∇(q) ⋅ ∇(p)))dΩ
 a((u, p), (v, q)) = agk((u, p), (v, q)) + aτ((u, p), (v, q))
-l((v, q)) = -1.0 * ∫((τpspg ∘ (he)) * μ * (∇(q) ⋅ (∇ ⋅ (gu))))dΩ
+l((v, q)) = ∫((ρ/Δt)*(xh⁻[1]⋅v))dΩ-∫((τpspg ∘ (he)) * μ * (∇(q) ⋅ (∇ ⋅ (gu))))dΩ
 
 compmodel = StaticLinearModel(l, a, U⁺, V, D_bc)
 
 xh⁺ = get_state(compmodel)
 function driverpost(post)
     Λ_ = post.iter
+    Λ = post.Λ[Λ_]
     uh = xh⁺[1]
     ph = xh⁺[2]
     pvd = post.cachevtk[3]
     filePath = post.cachevtk[2]
     if post.cachevtk[1]
-        pvd[Λ_] = createvtk(Ω, filePath * "/Stokes" * ".vtu", cellfields=["u" => uh, "p" => ph])
+        pvd[Λ_] = createvtk(Ω, filePath * "/$(Λ)_Stokes" * ".vtu", cellfields=["u" => uh, "p" => ph])
     end
 end
 
 post_model = PostProcessor(compmodel, driverpost; is_vtk=true, filepath=simdir)
 
-nsteps = 10
-  for Λ in range(0.0, stop=1.0, length=11)
-    @show Λ
-    TrialFESpace!(U⁺, compmodel.dirichlet, Λ)
-    solve!(compmodel; Assembly=true, post=post_model)
-    TrialFESpace!(U⁻, compmodel.dirichlet, Λ)
+nsteps = 500
+for (i, t) in enumerate(range(0.0, stop=nsteps*Δt, length=nsteps+1))
+    @show t
+    TrialFESpace!(U⁺, compmodel.dirichlet, t)
+    solve!(compmodel; Assembly=true)
+    TrialFESpace!(U⁻, compmodel.dirichlet, t)
     get_free_dof_values(xh⁻) .= get_free_dof_values(xh⁺)
+    post_model(t)
 end
+HyperFEM.vtk_save(post_model)
+ 
