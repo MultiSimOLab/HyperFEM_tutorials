@@ -1,0 +1,109 @@
+using HyperFEM
+using Gridap, GridapGmsh, GridapSolvers, DrWatson
+using GridapSolvers.NonlinearSolvers
+using Gridap.FESpaces
+using WriteVTK
+
+
+simdir = datadir("sims", "fluid_stokes")
+setupfolder(simdir)
+
+geomodel = GmshDiscreteModel("./data/models/example.msh")
+
+
+# Setup integration
+orderu = 1
+orderp = 1
+
+Ω = Triangulation(geomodel)
+dΩ = Measure(Ω, 2 * orderu)
+ 
+# DirichletBC velocity
+evolu(Λ) = 1.0
+dir_u_tags = ["Dirichlet_Inlet", "Dirichlet_Wall", "Dirichlet_Circle"]
+dir_u_values = [x->VectorValue([16*1.0*(0.0625-x[2]^2),0.0]),[0.0, 0.0], [0.0, 0.0]]
+dir_u_timesteps = [evolu,evolu,evolu]
+Du = DirichletBC(dir_u_tags, dir_u_values, dir_u_timesteps)
+
+D_bc = MultiFieldBC([Du,  NothingBC()])
+
+# Finite Elements
+reffeu = ReferenceFE(lagrangian, VectorValue{2,Float64}, orderu)
+reffep = ReferenceFE(lagrangian, Float64, orderp)
+
+# Test FE Spaces
+Vu = TestFESpace(geomodel, reffeu, D_bc[1], conformity=:H1)
+Vp = TestFESpace(geomodel, reffep, D_bc[2], conformity=:H1)
+
+# Trial FE Spaces
+Uu = TrialFESpace(Vu, D_bc[1],1.0)
+Up = TrialFESpace(Vp, D_bc[2],1.0)
+
+# Multifield FE Spaces
+V = MultiFieldFESpace([Vu, Vp])
+U = MultiFieldFESpace([Uu, Up])
+
+  
+I=TensorValue(1.0,0.0,0.0,1.0)
+ε(∇u)=0.5*(∇u+∇u')
+μ=1.0
+a((u, p),(v, q)) = ∫((μ*(ε∘(∇(u)))-p*I)⊙ (ε∘(∇(v))))dΩ-∫(q*(I ⊙ (ε∘(∇(u)))))dΩ
+l((v,q))=0.0
+m = StaticLinearModel(l, a, U, V, D_bc)
+
+
+
+op=AffineFEOperator(a,l,U,V)
+K, b = get_matrix(op), get_vector(op)
+ 
+
+
+  assem=m.caches[5]
+  u = get_trial_fe_basis(U)
+  v = get_fe_basis(V)
+  uhd = zero(U)
+  matcontribs=a(u,v)
+  veccontribs = l(v)
+  data = collect_cell_matrix_and_vector(U,V,matcontribs,veccontribs,uhd)
+  assemble_matrix_and_vector!(K,b,assem,data)
+
+
+  
+  A,b = assemble_matrix_and_vector(assem,data)
+
+  assemble_matrix_and_vector!(K,b,assem,data)
+ 
+
+b .*=200
+# xh=get_state(compmodel)
+# Postprocessor to save results
+function driverpost(post)
+    Λ_ = post.iter
+    uh = xh[1]
+    ph = xh[2]
+    pvd = post.cachevtk[3]
+    filePath = post.cachevtk[2]
+    if post.cachevtk[1]
+        pvd[Λ_] = createvtk(Ω,filePath * "/Stokes" * ".vtu",cellfields=["u" => uh, "p" => ph])
+    end
+end
+
+post_model = PostProcessor(m, driverpost; is_vtk=true, filepath=simdir)
+ 
+solve!(m; Assembly=true, post=post_model)
+
+ 
+
+
+   U, V = m.spaces
+    jac = m.jac
+    res = m.res
+    ns, K, b, x, assem_U = m.caches
+ 
+        assemble_vector!(res, b, assem_U, V)
+ 
+            b = allocate_in_range(K)
+        fill!(b, zero(eltype(b))) # 1D
+
+    numerical_setup!(ns, K)
+    solve!(x, ns, b)
