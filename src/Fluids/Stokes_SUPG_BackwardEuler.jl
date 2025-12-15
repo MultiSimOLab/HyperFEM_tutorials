@@ -3,7 +3,10 @@ using Gridap, GridapGmsh, GridapSolvers, DrWatson
 using GridapSolvers.NonlinearSolvers
 using Gridap.FESpaces
 using WriteVTK
+using TimerOutputs
 
+
+function main(nsteps,Δt)
 simdir = datadir("sims", "fluid_stokes_SUPG_backeuler")
 setupfolder(simdir)
 
@@ -54,7 +57,6 @@ I = TensorValue(1.0, 0.0, 0.0, 1.0)
 ε(∇u) = 0.5 * (∇u + ∇u')
 μ = 1.0
 ρ = 1.0
-Δt=0.025
 cellmeasure = sqrt.(get_cell_measure(Ω))
 he = FEFunction(Vl2, cellmeasure)
 τlsic(u, he) = ρ * norm(u) * he * 0.5
@@ -85,14 +87,18 @@ end
 
 post_model = PostProcessor(compmodel, driverpost; is_vtk=true, filepath=simdir)
 
-nsteps = 500
 for (i, t) in enumerate(range(0.0, stop=nsteps*Δt, length=nsteps+1))
     @show t
     TrialFESpace!(U⁺, compmodel.dirichlet, t)
     solve!(compmodel; Assembly=true)
     TrialFESpace!(U⁻, compmodel.dirichlet, t)
     get_free_dof_values(xh⁻) .= get_free_dof_values(xh⁺)
-    post_model(t)
+    interpolate_everywhere!(∇(xh⁻[1])',get_free_dof_values(gu) ,gu.dirichlet_values ,Vgu)
+    # post_model(t)
 end
 HyperFEM.vtk_save(post_model)
- 
+end
+
+reset_timer!()
+main(500,0.025)
+print_timer()
