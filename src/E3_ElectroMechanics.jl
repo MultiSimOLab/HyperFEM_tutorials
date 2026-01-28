@@ -33,7 +33,7 @@ Du = DirichletBC(dir_u_tags, dir_u_values, dir_u_timesteps)
 
 evolφ(Λ) = Λ
 dir_φ_tags = ["midsuf", "topsuf"]
-dir_φ_values = [0.0, 0.1]
+dir_φ_values = [0.0, 0.3]
 dir_φ_timesteps = [evolφ, evolφ]
 Dφ = DirichletBC(dir_φ_tags, dir_φ_values, dir_φ_timesteps)
 
@@ -96,4 +96,4 @@ end
 post_model = PostProcessor(comp_model, driverpost; is_vtk=true, filepath=simdir)
 
 # Solve
-x = solve!(comp_model; stepping=(nsteps=5, maxbisec=5), ProjectDirichlet=true, post=post_model)
+x = solve!(comp_model; stepping=(nsteps=20, maxbisec=5), ProjectDirichlet=true, post=post_model)

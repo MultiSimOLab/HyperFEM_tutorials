@@ -34,7 +34,7 @@ Du = DirichletBC(dir_u_tags, dir_u_values, dir_u_timesteps)
 
 evolφ(Λ) = Λ
 dir_φ_tags = ["midsuf", "topsuf"]
-dir_φ_values = [0.0, 0.1]
+dir_φ_values = [0.0, 0.3]
 dir_φ_timesteps = [evolφ, evolφ]
 Dφ = DirichletBC(dir_φ_tags, dir_φ_values, dir_φ_timesteps)
 
@@ -63,16 +63,16 @@ ke=Kinematics(Electro,Solid)
 F,_,_ = get_Kinematics(km)
 E     = get_Kinematics(ke)
 
-N = interpolate_everywhere(VectorValue(0.0,0.0,1.0), Vu)
+N = interpolate_everywhere(VectorValue(1.0,0.0,1.0), Vu)
 
-res(Λ) = ((u, φ), (v, vφ)) ->   ∫(∇(v)' ⊙ (∂Ψu ∘ (F∘∇(u)', E∘∇(φ),N)))dΩ -
-                                ∫(∇(vφ) ⋅ (∂Ψφ ∘ (F∘∇(u)', E∘∇(φ),N)))dΩ
+res(Λ) = ((u, φ), (v, vφ)) ->   ∫(∇(v)' ⊙ (∂ΨF ∘ (F∘∇(u)', E∘∇(φ),N)))dΩ -
+                                ∫(∇(vφ) ⋅ (∂ΨE ∘ (F∘∇(u)', E∘∇(φ),N)))dΩ
 
 
-jac(Λ) = ((u, φ), (du, dφ), (v, vφ)) ->  ∫(∇(v)' ⊙ ((∂Ψuu ∘ (F∘∇(u)', E∘∇(φ),N)) ⊙ ∇(du)'))dΩ +
-                                         ∫(∇(vφ)' ⋅ ((∂Ψφφ ∘ (F∘∇(u)', E∘∇(φ),N)) ⋅ ∇(dφ)))dΩ -
-                                         ∫(∇(dφ) ⋅ ((∂Ψφu ∘ (F∘∇(u)', E∘∇(φ),N)) ⊙ ∇(v)'))dΩ -
-                                         ∫(∇(vφ) ⋅ ((∂Ψφu ∘ (F∘∇(u)', E∘∇(φ),N)) ⊙ ∇(du)'))dΩ 
+jac(Λ) = ((u, φ), (du, dφ), (v, vφ)) ->  ∫(∇(v)' ⊙ ((∂ΨFF ∘ (F∘∇(u)', E∘∇(φ),N)) ⊙ ∇(du)'))dΩ +
+                                         ∫(∇(vφ)' ⋅ ((∂ΨEE ∘ (F∘∇(u)', E∘∇(φ),N)) ⋅ ∇(dφ)))dΩ -
+                                         ∫(∇(dφ) ⋅ ((∂ΨEF ∘ (F∘∇(u)', E∘∇(φ),N)) ⊙ ∇(v)'))dΩ -
+                                         ∫(∇(vφ) ⋅ ((∂ΨEF ∘ (F∘∇(u)', E∘∇(φ),N)) ⊙ ∇(du)'))dΩ 
 
 
 # nonlinear solver
