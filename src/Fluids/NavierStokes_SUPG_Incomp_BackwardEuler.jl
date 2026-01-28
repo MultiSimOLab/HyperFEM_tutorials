@@ -95,7 +95,6 @@ function main(nsteps, tend)
                                  resp_gk((u, p), (v, q)) +
                                  resp_τ((u, p), (v, q))
 
-
     jacu_gk((u, p), (du, dp), (v, q)) = ∫(ρ * v ⋅ (Da ∘ (du)))dΩ +
                                         ∫((μ * (ε ∘ (∇(du)))) ⊙ (ε ∘ (∇(v))))dΩ -
                                         ∫(dp * (∇ ⋅ v))dΩ +
@@ -109,10 +108,8 @@ function main(nsteps, tend)
                                                                    (∇(v)' * u) ⋅ (DRu_p ∘ (∇(dp)))))dΩ +
                                        ∫((τlsic ∘ (xh⁻[1], he)) * (∇ ⋅ v) * (∇ ⋅ du))dΩ
 
-
     jacp_τ((u, p), (du, dp), (v, q)) = -1.0 * ∫((τpspg ∘ (he)) * ∇(q) ⋅ (DRu_u ∘ (u, ∇(u)', du, ∇(du)')))dΩ -
                                        ∫((τpspg ∘ (he)) * ∇(q) ⋅ (DRu_p ∘ (∇(dp))))dΩ
-
 
     jac(Λ) = ((u, p), (du, dp), (v, q)) -> jacu_gk((u, p), (du, dp), (v, q)) +
                                            jacu_τ((u, p), (du, dp), (v, q)) +
