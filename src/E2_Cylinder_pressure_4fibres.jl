@@ -6,15 +6,6 @@ using HyperFEM
 using Gridap.FESpaces
 using WriteVTK
 
-# using Gridap.MultiField
-# using Gridap.FESpaces: get_assembly_strategy
-# using Gridap.Algebra
-# using BlockArrays
-
-# using ForwardDiff
-# using LinearAlgebra
-
-
 pname = "Hyperelastic_Cylinder"
 simdir = datadir("sims", pname)
 setupfolder(simdir)
@@ -63,27 +54,23 @@ Nh = interpolate_everywhere(NΓ, VNΓ)
 # Fibers configuration
 # ---------------------
 function fibres(x)
-  n_ = [x[1], x[2], 0.0]
   c_ = [-x[2], x[1], 0.0]
   l_ = [0.0, 0.0, 1.0]
-  n = VectorValue(n_) / norm(n_)
   c = VectorValue(c_) / norm(c_)
   l = VectorValue(l_)                
-  return n, c, l
+  return c, l
 end
 
 function RotatedVectors(α, l, c)
-  n = l × c
-  v1 = cos(α) * c + sin(α) * (n × c)
-  v2 = cos(α + π / 2) * c + sin(α + π / 2) * (n × c)
+  v1 = cos(α) * c + sin(α) * l
+  v2 = cos(α + π / 2) * c + sin(α + π / 2) * l
   return v1, v2
 end
 
-ch = interpolate_everywhere(x -> fibres(x)[2], Vfiber)   # circumferential vector
-lh = interpolate_everywhere(x -> fibres(x)[3], Vfiber)   # longitudinal vector
-v1h = interpolate_everywhere(x -> RotatedVectors(π / 4, fibres(x)[3], fibres(x)[2])[1], Vfiber)   # vector between c and l at an angle α from c
-v2h = interpolate_everywhere(x -> RotatedVectors(π / 4, fibres(x)[3], fibres(x)[2])[2], Vfiber)   # vector between c and l at an angle α+π/2 from c
-
+ch = interpolate_everywhere(x -> fibres(x)[1], Vfiber)   # circumferential vector
+lh = interpolate_everywhere(x -> fibres(x)[2], Vfiber)   # longitudinal vector
+v1h = interpolate_everywhere(x -> RotatedVectors(π / 4, fibres(x)[2], fibres(x)[1])[1], Vfiber)   # vector between c and l at an angle α from c
+v2h = interpolate_everywhere(x -> RotatedVectors(π / 4, fibres(x)[2], fibres(x)[1])[2], Vfiber)   # vector between c and l at an angle α+π/2 from c
 
 # Kinematic Description
 km=Kinematics(Mechano,Solid)
