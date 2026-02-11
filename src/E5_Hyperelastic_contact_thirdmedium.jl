@@ -19,7 +19,7 @@ geomodel = GmshDiscreteModel(datadir("models", meshfile))
 # mechanical model of third medium (As Rigid As Possible)
 fc             =  1e-8 # material parameter ratio bwtween third medium and solid
 model_contact_ =  ARAP2D(μ=1e5*fc)
-model_contact  =  HessianRegularization(mechano=model_contact_, δ=fc*1e5*1e-5)
+model_contact  =  HessianRegularization(mechano=model_contact_, δ=fc*1e5*1e-3)
 
 # mechanical model of solid
 modelmech   =  NonlinearMooneyRivlin2D(λ=2e7, μ1=1e5, μ2=1e5, α1=1.0, α2=2.0)
@@ -79,7 +79,7 @@ jac(Λ) = (u, du, v) -> ∫(∇(v)' ⊙ ((∂Ψs∂FF ∘ (F ∘ (∇(u)'))) ⊙
 
 α = CellState(1.0, dΩdomain)
 linesearch = Injectivity_Preserving_LS(α, U, V; maxiter=50, αmin=1e-16, ρ=0.5, c=0.95)
-nls_mech = Newton_RaphsonSolver(LUSolver(); maxiter=100, rtol=1e-3, verbose=true, linesearch=linesearch)
+nls_mech = Newton_RaphsonSolver(LUSolver(); maxiter=500, rtol=1e-3, verbose=true, linesearch=linesearch)
 comp_model = StaticNonlinearModel(res, jac, U, V, Du; nls=nls_mech)
 
 # ******************************************************
