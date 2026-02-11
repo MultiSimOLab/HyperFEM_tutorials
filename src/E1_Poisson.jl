@@ -12,6 +12,7 @@ u₀(x) = cos(x[1]) * sin(x[2] + π)
 ∇u₀(x) = VectorValue(-sin(x[1]) * sin(x[2] + π),cos(x[1]) * cos(x[2] + π),0.0)
 Δu₀(x) = -2.0 * cos(x[1]) * sin(x[2] + π)
 
+
 ########################################
 # PROBLEM DEFINITION
 ########################################
@@ -97,7 +98,8 @@ a(u, v) = ∫( ∇(v) ⋅ ∇(u) ) * dΩ
 # Linear form:
 # - volumetric source term
 # - Neumann boundary contribution
-l(v) = ∫( v * f ) * dΩ + ∫( v * h ) * dΓ
+h_= interpolate_everywhere(h, V)
+l(v) = ∫( v * f ) * dΩ + ∫( v * h_ ) * dΓ
 
 compmodel = StaticLinearModel(l, a, U, V, Du)
 solve!(compmodel; Assembly=false)
@@ -118,10 +120,10 @@ l2_error = sqrt(sum(∫( e ⋅ e ) * dΩe))
 writevtk(Ω, simdir*"/poisson", cellfields = ["uh" => uh, "error"=> e])
 
 
-# xh_= get_free_dof_values(h_)
-# for  n in [2.0, 3.0, 4.0]
-#    xh_ .+= n
-#    solve!(compmodel)
-#    e = uh - u₀
-#    @show l2_error = sqrt(sum(∫( e ⋅ e ) * dΩe))
-# end
+xh_= get_free_dof_values(h_)
+for  n in [2.0, 3.0, 4.0]
+   xh_ .+= n
+   solve!(compmodel)
+   e = uh - u₀
+   @show l2_error = sqrt(sum(∫( e ⋅ e ) * dΩe))
+end
