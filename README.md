@@ -33,7 +33,34 @@ pkg> activate .
 pkg> instantiate
 ```
 
-## Installation
+## Examples
+The HyperFEM tutorials include a wide range of examples, carefully selected to demonstrate the toolbox's capabilities. Each example focuses on a specific type of problem, from basic PDEs to complex multiphysics and optimization scenarios. These examples are ideal for understanding both the theoretical formulation and the practical implementation of FEM simulations in Julia.
+
+```julia
+Example 1: Poisson
+# Introduces fundamental FEM concepts and demonstrates solving a simple Poisson equation.
+
+Example 2: Hyperelastic beam stretching
+# Illustrates large deformation analysis of a hyperelastic beam, showcasing material nonlinearity.
+
+Example 3: Hyperelastic cylinder (4 fibres model) under internal pressure
+# Demonstrates anisotropic hyperelastic modeling with fiber-reinforced materials under internal loading.
+
+Example 4: Electromechanical beam
+# Introduces coupled electromechanical simulations, highlighting interactions between mechanical and electrical fields.
+
+Example 5: Anisotropic Electromechanical beam
+# Shows the effect of anisotropic material behavior in coupled electromechanical problems.
+
+Example 6: Hyperelastic contact with third medium
+# Covers contact mechanics involving hyperelastic materials interacting with a third body.
+
+Example 7 (under construction): Topology optimization of hyperelastic cantilever
+# Demonstrates optimization techniques applied to hyperelastic structures for design improvement.
+
+Example 8: Magnetomechanical beam
+# Illustrates magnetomechanical coupling simulations, integrating magnetic and mechanical field interactions.
+```
 
 
 ## How to cite HyperFEM
