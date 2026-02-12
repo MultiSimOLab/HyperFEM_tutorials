@@ -6,7 +6,7 @@
 [![Build Status](https://github.com/MultiSimOLab/HyperFEM/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MultiSimOLab/HyperFEM/actions/workflows/ci.yml?branch=main)
 [![Coverage](https://codecov.io/gh/jmartfrut/HyperFEM.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/jmartfrut/HyperFEM.jl)
 
-# HyperFEM tutorials
+# HyperFEM tutorials <img src="https://github.com/jmartfrut/HyperFEM/blob/main/docs/imgs/logo.png?raw=true"  width="40" title="HyperFEM logo">
 
 <div align="justify" style="margin-left: 40px; margin-right: 40px;">
 
@@ -20,8 +20,9 @@ HyperFEM is built on top of the Gridap.jl ecosystem, providing specialized tools
 ## Installation
 1- Clone the repository:
 git clone https://github.com/MultiSimOLab/HyperFEM_tutorials.git
+```
 cd HyperFEM_tutorials
-
+```
 2- Open the Julia REPL, type `]` to enter package mode, and activate de environment:
 ```julia
 pkg> activate .
@@ -31,6 +32,9 @@ pkg> activate .
 ```julia
 pkg> instantiate
 ```
+
+## Installation
+
 
 ## How to cite HyperFEM
 
