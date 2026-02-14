@@ -55,7 +55,7 @@ Example 5: Anisotropic Electromechanical beam
 Example 6: Hyperelastic contact with third medium
 # Covers contact mechanics involving hyperelastic materials interacting with a third body.
 
-Example 7 (under construction): Topology optimization of hyperelastic cantilever
+Example 7 Topology optimization of hyperelastic cantilever
 # Demonstrates optimization techniques applied to hyperelastic structures for design improvement.
 
 Example 8: Magnetomechanical beam
