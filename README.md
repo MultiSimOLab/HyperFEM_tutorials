@@ -10,9 +10,9 @@
 
 <div align="justify" style="margin-left: 40px; margin-right: 40px;">
 
-This repository contains a set of tutorials designed to help users learn how to simulate hyperelastic materials and solve multiphysic problems using the Finite Element Method (FEM) in Julia with the [HyperFEM](https://github.com/gridap/Gridap.jl) toolbox.
+This repository contains a set of tutorials designed to help users learn how to simulate hyperelastic materials and solve multiphysic problems using the Finite Element Method (FEM) in Julia with [HyperFEM.jl](https://github.com/MultiSimOLab/HyperFEM.jl).
 
-HyperFEM is built on top of the Gridap.jl ecosystem, providing specialized tools for multiphysics hyperelastic simulations. The initial tutorials demonstrate the core usage of HyperFEM, and these are recommended for new users.
+HyperFEM.jl is built on top of the [Gridap.jl](https://github.com/gridap/Gridap.jl) ecosystem, providing specialized tools for multiphysics hyperelastic simulations. The initial tutorials demonstrate the core usage of HyperFEM, and these are recommended for new users.
  
 
 </div>
