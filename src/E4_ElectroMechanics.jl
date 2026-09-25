@@ -8,7 +8,7 @@ using WriteVTK
 simdir = datadir("sims", "Static_ElectroMechanical")
 setupfolder(simdir)
 
-geomodel = GmshDiscreteModel("./data/models/test_static_EM.msh")
+geomodel = GmshDiscreteModel("./data/models/test_static_EM.msh"; has_affine_map=false)
 
 # Constitutive model
 physmodel_mec = NeoHookean3D(λ=10.0, μ=1.0)
